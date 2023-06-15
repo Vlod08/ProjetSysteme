@@ -44,9 +44,12 @@ char* substring(char *destination, const char *source, int beg, int n)
     while (n > 0)
     {
         *destination = *(source + beg);
+        //printf("%d : %c \n",n,*destination);
  
         destination++;
-        source++;
+        
+        beg++;
+        
         n--;
     }
  
@@ -59,49 +62,58 @@ char* substring(char *destination, const char *source, int beg, int n)
 
 
 
-int redirection(char* command){
+int redirection(char* command, int length){
 	
-	
-    int redir =0;	
+	int redir = 0;	
 	printf("Checking for redirection \n");
-	int length = sizeof(command)/sizeof(char);
+	//int length = sizeof(*command);
+	//printf("printing the length : %d \n", length);
 	
 	for(int i =0; i<length; i++){
-	
 		//printf(" %c \n", command[i]);
-		if(command[i] == '<'){
-            redir = 1;
-            char* filename = (char*) malloc(sizeof(char) * (length - (i+1)));
-            //printf("here1 \n");
-            substring(filename,command, i+1, length);			
-            //printf("here2< \n");            
-            int file = open(filename, O_RDONLY , 0777);
+	    	if(command[i] == '<'){
+	    	
+            		printf("found the input command !!!\n");
+            		redir = 1;
+            		char* filename = (char*) malloc(sizeof(char) * (length - (i+1))); 
+            		//printf("here1 \n");
+            		
+            		substring(filename,command, i+1 , length - (i+1));			
+            		//printf("here2< \n");            
+            		
+            		int file = open(filename, O_RDONLY , 0777);
+            		printf("printing the file name : %s \n", filename);
+            		
+            		if(file < 0 ){
+            			perror("The open function failed \n");
+            		}
+            		
 			char line[100];
 			dup2(file,STDIN_FILENO);
-            char buffer[100];
-            while(read(file,buffer,100)>0){
-                printf("%s \n", buffer);            
-            }            
+            		char buffer[100];
+            		while(read(file,buffer,100)>0){
+            		
+            		printf("%s \n", buffer);   
+            		         
+            		}            
             
-            
-			
-		}
+            	}
 		
 		else if(command[i] == '>'){
-            redir = 1;
-            char* filename = (char*) malloc(sizeof(char) * (length - (i+1)));
-            //printf("here1 \n");
-            substring(filename,command, i+1, length);			
-            //printf("here2< \n");            
-            int file = open(filename, O_WRONLY  | O_CREAT , 0777);
-		
-
+            		
+            		redir = 1;
+            		char* filename = (char*) malloc(sizeof(char) * (length - (i+1)));
+            		//printf("here1 \n");
+            		substring(filename,command, i+1, length);			
+            		//printf("here2< \n");            
+            		int file = open(filename, O_WRONLY  | O_CREAT , 0777);
 			dup2(file,STDIN_FILENO);
-            //char buffer[100];
+            		//char buffer[100];
             
 			printf("printing the file \n");
 			
 		
+		}
 	}
     return redir;
 }
@@ -117,7 +129,9 @@ int main() {
         // Affichage du prompt
         printf("Entrer la commande a executer : \n");
         
-        gets(command);
+        read(0,command,100);
+    	//printf("Commande recu : %s\n", command);
+    
         if (strcmp(command,"exit")==0){
         	run = 0;
         	break;
@@ -147,12 +161,13 @@ int main() {
                 }
             }
         }
-        else if(redirection(command) == 1){
+        else if(redirection(command, strlen(command)) == 1){
             continue;        
         }
         
-         else {
+         else{
             // Exécution de la commande dans un nouveau processus
+            //printf("Entering here -------> \n");
             execute_command(command);
         }
     }
