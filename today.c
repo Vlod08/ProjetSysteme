@@ -122,7 +122,7 @@ int redirection(char* command, int length){
 			dup2(file,STDIN_FILENO);
 			close(file);
             		char buffer[100];
-            		break;
+            		return 2;
             		/*while(read(file,buffer,100)>0){
             		
             		printf("%s \n", buffer);   
@@ -163,16 +163,29 @@ int main() {
     int run = 1;
     char o = '\0';
     printf("***%c****\n",o);
+    int input_redir = 0;
     
     while (run) {
         // Affichage du prompt
         //printf("Entrer la commande a executer : \n");
+        memset(command, 0, strlen(command));
+        if (input_redir = 2) {
+            while (fgets(command, sizeof(command), stdin) == NULL || command[0] == '\n') {
+                // Loop until a newline character is read from the file
+            }
+        } else {
+            fgets(command, sizeof(command), stdin);
+        }
+        /*if(input_redir==2){
+        	read(0,command,100);
+        }
+        else{
+        	fgets(command, sizeof(command), stdin);
+        }*/
         
-        fgets(command, sizeof(command), stdin);
-        //read(0,command,100);
-    	printf("Commande recu : %s\n", command);
+    	printf("Commande recu :%s\n", command);
     
-        if (strcmp(command,"exit")==0){
+        if (strcmp(command,"exit") == 0){
         	run = 0;
         	break;
         }
@@ -183,9 +196,10 @@ int main() {
         else if (strncmp(command, "cd", 2) == 0) {
         
             //printf("testing the cd command \n");
-            char delim[] = " ";
-            char* path = strtok(command + 2, delim);
-            
+            //char delim[] = " ";
+            //char* path = strtok(command + 2, delim);
+            char path[MAX_COMMAND_LENGTH];
+            substring(path, command, 2, strlen(command));
             //printf("testing the path : %s\n", path);
             
             if (path != NULL) {
@@ -200,8 +214,10 @@ int main() {
                 
                 }
             }
+            continue;
         }
-        else if(redirection(command, strlen(command)) == 1){
+        input_redir = redirection(command, strlen(command));
+        if(input_redir > 0){
             continue;        
         }
         
